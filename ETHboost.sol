@@ -51,35 +51,40 @@ interface ERC20Interface {
 // Borrowed from MiniMeToken
 // ----------------------------------------------------------------------------
 contract ApproveAndCallFallBack {
-    function receiveApproval(address from, uint256 tokens, address token, bytes data) public;
+    function receiveApproval(address from, uint256 tokens, address token, bytes memory data) public;
 }
 
 contract ETHboost is ERC20Interface {
     using SafeMath for uint256;
 
-    string constant tokenName = "ETHboost";
-    string constant tokenSymbol = "BOOST";
-    uint8  constant tokenDecimals = 4;
-    uint256 _totalSupply = 200000000 * (10 ** tokenDecimals);
+    string public symbol;
+    string public name;
+    uint8 public decimals;
+    uint _totalSupply;
 
     mapping(address => uint256) _balances;
     mapping(address => mapping(address => uint256)) _allowed;
 
     constructor() public {
+        symbol = "BOOST";
+        name = "ETHboost";
+        decimals = 4;
+        _totalSupply = 200000000 * 10**uint(decimals);
+
         // Mint.
         _balances[msg.sender] = _totalSupply;
         emit Transfer(address(0), msg.sender, _totalSupply);
     }
 
-    function totalSupply() public constant returns (uint256) {
+    function totalSupply() public view returns (uint256) {
         return _totalSupply;
     }
 
-    function balanceOf(address owner) public constant returns (uint256 balance) {
+    function balanceOf(address owner) public view returns (uint256 balance) {
         return _balances[owner];
     }
 
-    function getBurnValue(uint256 value) public view returns (uint256)  {
+    function getBurnValue(uint256 value) public pure returns (uint256)  {
         return value / (1 * 100);
     }
     
@@ -134,15 +139,15 @@ contract ETHboost is ERC20Interface {
         return _allowed[owner][spender];
     }
 
-    function approveAndCall(address spender, uint256 tokens, bytes data) public returns (bool success) {
+    function approveAndCall(address spender, uint256 tokens, bytes memory data) public returns (bool success) {
         _allowed[msg.sender][spender] = tokens;
         emit Approval(msg.sender, spender, tokens);
-        ApproveAndCallFallBack(spender).receiveApproval(msg.sender, tokens, this, data);
+        ApproveAndCallFallBack(spender).receiveApproval(msg.sender, tokens, address(this), data);
         return true;
     }
 
     // Don't accept ETH transactions.
-    function () public payable {
+    function () external payable {
         revert();
     }
 }
