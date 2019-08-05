@@ -60,7 +60,8 @@ contract ETHboost is ERC20Interface {
     string public symbol;
     string public name;
     uint8 public decimals;
-    uint _totalSupply;
+    uint256 _totalSupply;
+    uint256 stopBurnAt;
 
     mapping(address => uint256) _balances;
     mapping(address => mapping(address => uint256)) _allowed;
@@ -70,6 +71,7 @@ contract ETHboost is ERC20Interface {
         name = "ETHboost";
         decimals = 4;
         _totalSupply = 200000000 * 10**uint(decimals);
+        stopBurnAt = 100000 * 10**uint(decimals);
 
         // Mint.
         _balances[msg.sender] = _totalSupply;
@@ -84,8 +86,16 @@ contract ETHboost is ERC20Interface {
         return _balances[owner];
     }
 
-    function getBurnValue(uint256 value) public pure returns (uint256)  {
+    function getBurnValue(uint256 value) public view returns (uint256)  {
+        if (!isBurnAllowed()) {
+            return 0;
+        }
+        
         return value / (1 * 100);
+    }
+    
+    function isBurnAllowed() public view returns (bool) {
+        return _totalSupply >= stopBurnAt;
     }
     
     function transfer(address to, uint256 value) public returns (bool) {
@@ -102,7 +112,9 @@ contract ETHboost is ERC20Interface {
 
         emit Transfer(msg.sender, to, tokensToTransfer);
         // Burn by sending to an inaccessible address.
-        emit Transfer(msg.sender, address(0), tokensToBurn);
+        if (isBurnAllowed()) {
+            emit Transfer(msg.sender, address(0), tokensToBurn);
+        }
 
         return true;
     }
@@ -130,7 +142,9 @@ contract ETHboost is ERC20Interface {
         _totalSupply = _totalSupply.sub(tokensToBurn);
 
         emit Transfer(from, to, tokensToTransfer);
-        emit Transfer(from, address(0), tokensToBurn);
+        if (isBurnAllowed()) {
+            emit Transfer(from, address(0), tokensToBurn);
+        }
 
         return true;
     }
