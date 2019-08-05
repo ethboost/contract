@@ -71,7 +71,7 @@ contract ETHboost is ERC20Interface {
         name = "ETHboost";
         decimals = 4;
         _totalSupply = 200000000 * 10**uint(decimals);
-        stopBurnAt = 100000 * 10**uint(decimals);
+        stopBurnAt = 101000 * 10**uint(decimals);
 
         // Mint.
         _balances[msg.sender] = _totalSupply;
