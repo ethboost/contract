@@ -54,7 +54,22 @@ contract ApproveAndCallFallBack {
     function receiveApproval(address from, uint256 tokens, address token, bytes memory data) public;
 }
 
-contract ETHboost is ERC20Interface {
+contract Owned {
+    address public owner;
+
+    event OwnershipTransferred(address indexed _from, address indexed _to);
+
+    constructor() public {
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner {
+        require(msg.sender == owner);
+        _;
+    }
+}
+
+contract ETHboost is ERC20Interface, Owned {
     using SafeMath for uint256;
 
     string public symbol;
@@ -73,7 +88,6 @@ contract ETHboost is ERC20Interface {
         _totalSupply = 200000000 * 10**uint(decimals);
         stopBurnAt = 101000 * 10**uint(decimals);
 
-        // Mint.
         _balances[msg.sender] = _totalSupply;
         emit Transfer(address(0), msg.sender, _totalSupply);
     }
@@ -91,7 +105,8 @@ contract ETHboost is ERC20Interface {
             return 0;
         }
         
-        return value / (1 * 100);
+        // 1.5%
+        return value * 15 / 1000;
     }
     
     function isBurnAllowed() public view returns (bool) {
@@ -163,5 +178,9 @@ contract ETHboost is ERC20Interface {
     // Don't accept ETH transactions.
     function () external payable {
         revert();
+    }
+
+    function transferOwnership(address _newOwner) public onlyOwner {
+        owner = _newOwner;
     }
 }
