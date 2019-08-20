@@ -127,10 +127,8 @@ contract ETHboost is ERC20Interface, Owned {
 
         emit Transfer(msg.sender, to, tokensToTransfer);
         // Burn by sending to an inaccessible address.
-        if (isBurnAllowed()) {
-            emit Transfer(msg.sender, address(0), tokensToBurn);
-        }
-
+        emit Transfer(msg.sender, address(0), tokensToBurn);
+        
         return true;
     }
 
@@ -157,9 +155,7 @@ contract ETHboost is ERC20Interface, Owned {
         _totalSupply = _totalSupply.sub(tokensToBurn);
 
         emit Transfer(from, to, tokensToTransfer);
-        if (isBurnAllowed()) {
-            emit Transfer(from, address(0), tokensToBurn);
-        }
+        emit Transfer(from, address(0), tokensToBurn);
 
         return true;
     }
